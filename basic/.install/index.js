@@ -4,26 +4,28 @@ const {
   deploy,
   writeEnv,
   getInfo,
+  makeSandboxEndpoint
 } = require('graphql-boilerplate-install')
 
 module.exports = async ({ project, projectDir }) => {
   const templateName = 'graphql-boilerplate'
 
+  const endpoint = await makeSandboxEndpoint(project)
+
   replaceInFiles(
-    ['src/index.ts', 'package.json', 'database/prisma.yml'],
+    ['src/index.ts', 'package.json', 'prisma/prisma.yml'],
     templateName,
     project,
   )
+  replaceInFiles(['src/generated/prisma-client/index.ts'], '__PRISMA_ENDPOINT__', endpoint)
+  replaceInFiles(['prisma/prisma.yml'], '__PRISMA_ENDPOINT__', endpoint)
 
   console.log('Running $ prisma deploy...')
   await deploy(false)
-  const info = await getInfo()
-
-  replaceInFiles(['src/index.ts'], '__PRISMA_ENDPOINT__', info.httpEndpoint)
 
   console.log(`\
 Next steps:
   1. Change directory: \`cd ${projectDir}\`
-  2. Start local server and open Playground: \`yarn dev\`
+  2. Start local server and open Playground: \`yarn start\`
 `)
 }
